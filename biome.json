@@ -26,11 +26,20 @@
     "rules": {
       "suspicious": {
         "noConsole": "warn",
-        "noUnknownAtRules": "off"
+        "noUnknownAtRules": "off",
+        "noEmptyBlockStatements": "off",
+        "useAwait": "off"
       },
       "performance": {
         "noNamespaceImport": "off",
         "noBarrelFile": "off"
+      },
+      "style": {
+        "noMagicNumbers": "off",
+        "noExportedImports": "off"
+      },
+      "nursery": {
+        "useConsistentTypeDefinitions": "off"
       }
     }
   }
