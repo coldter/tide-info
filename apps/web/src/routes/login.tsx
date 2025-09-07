@@ -1,5 +1,6 @@
 import { RiGithubFill } from "@remixicon/react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { LogoDark, LogoLight } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
@@ -28,10 +29,13 @@ function RouteComponent() {
   return (
     <div className="grid min-h-svh place-items-center p-4">
       <div className="w-full max-w-sm rounded-lg border p-6 shadow-sm">
-        <h1 className="font-semibold text-xl">Log in</h1>
-        <p className="mt-1 text-muted-foreground text-sm">
-          Use GitHub to continue
-        </p>
+        <div className="mb-4 flex items-center justify-center gap-3">
+          <LogoLight className="block dark:hidden" height={48} width={256} />
+          <LogoDark className="hidden dark:block" height={48} width={256} />
+        </div>
+        <h1 className="text-center font-semibold text-xl">
+          Log in to Tide Info
+        </h1>
 
         <Button
           className="mt-6 w-full gap-2"
