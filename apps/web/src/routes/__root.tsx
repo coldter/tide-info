@@ -1,11 +1,12 @@
 import {
   createRootRouteWithContext,
   HeadContent,
+  Navigate,
   Outlet,
   useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import Header from "@/components/header";
+import AppError from "@/components/app-error";
 import Loader from "@/components/loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -15,6 +16,8 @@ export type RouterAppContext = Record<string, never>;
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   component: RootComponent,
+  notFoundComponent: () => <Navigate to="/login" />,
+  errorComponent: AppError,
   head: () => ({
     meta: [
       {
@@ -48,10 +51,7 @@ function RootComponent() {
         disableTransitionOnChange
         storageKey="vite-ui-theme"
       >
-        <div className="grid h-svh grid-rows-[auto_1fr]">
-          <Header />
-          {isFetching ? <Loader /> : <Outlet />}
-        </div>
+        <div className="min-h-svh">{isFetching ? <Loader /> : <Outlet />}</div>
         <Toaster richColors />
       </ThemeProvider>
       <TanStackRouterDevtools position="bottom-left" />

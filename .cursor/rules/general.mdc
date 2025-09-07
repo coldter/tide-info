@@ -1,0 +1,8 @@
+---
+description: General Rules to follow
+globs: "*"
+alwaysApply: true
+---
+
+- We're using Bun js runtime for our development tooling and using node compatibility to run the project locally as well.
+- Don't every start or stop the development server using `bun dev` or any other command. I'm already running the dev server.
