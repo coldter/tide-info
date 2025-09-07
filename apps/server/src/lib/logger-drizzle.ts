@@ -27,7 +27,7 @@ export class DrizzleLogger implements Logger {
       );
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: <>
+  // biome-ignore lint/suspicious/noExplicitAny: any
   replaceSqlPlaceholders(sqlTemplate: string, values: any[]) {
     // Ensure the number of placeholders matches the number of values
     const placeholderCount = (sqlTemplate.match(/\$\d+/g) || []).length;

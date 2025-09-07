@@ -8,6 +8,7 @@ import type { Env } from "@/lib/context";
 import { handleError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import { authContextMiddleware } from "@/middlewares/auth-context";
+import { globalRateLimitMW } from "@/middlewares/rate-limit";
 
 const baseApp = new OpenAPIHono<Env>().basePath(
   (process.env.BASE_PATH || "") as ""
@@ -29,6 +30,7 @@ baseApp.use(
     credentials: true,
   })
 );
+baseApp.use(globalRateLimitMW);
 
 baseApp.get("/ping", async (c) => {
   const dbResponse = await db.$client.execute("SELECT 1 AS one");

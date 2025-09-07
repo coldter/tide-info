@@ -1,4 +1,4 @@
-import { RiGithubFill } from "@remixicon/react";
+import { RiGithubLine } from "@remixicon/react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { LogoDark, LogoLight } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ function RouteComponent() {
           onClick={handleGithubLogin}
           type="button"
         >
-          <RiGithubFill aria-hidden="true" />
+          <RiGithubLine aria-hidden="true" />
           Continue with GitHub
         </Button>
       </div>

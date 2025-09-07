@@ -17,7 +17,7 @@ import "../index.css";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000, // 1 minute
+      staleTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false,
     },
   },
@@ -61,6 +61,7 @@ function RootComponent() {
           attribute="class"
           defaultTheme="dark"
           disableTransitionOnChange
+          enableSystem={true}
           storageKey="vite-ui-theme"
         >
           <div className="min-h-svh">

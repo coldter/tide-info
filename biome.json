@@ -28,7 +28,8 @@
         "noConsole": "warn",
         "noUnknownAtRules": "off",
         "noEmptyBlockStatements": "off",
-        "useAwait": "off"
+        "useAwait": "off",
+        "noExplicitAny": "warn"
       },
       "performance": {
         "noNamespaceImport": "off",
