@@ -11,6 +11,7 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import AppError from "@/components/app-error";
 import Loader from "@/components/loader";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TopNavbar } from "@/components/top-navbar";
 import { Toaster } from "@/components/ui/sonner";
 import "../index.css";
 
@@ -64,8 +65,11 @@ function RootComponent() {
           enableSystem={true}
           storageKey="vite-ui-theme"
         >
-          <div className="min-h-svh">
-            {isFetching ? <Loader /> : <Outlet />}
+          <div className="flex min-h-svh flex-col">
+            <TopNavbar />
+            <main className="flex-1">
+              {isFetching ? <Loader /> : <Outlet />}
+            </main>
           </div>
           <Toaster richColors />
         </ThemeProvider>

@@ -2,6 +2,7 @@ import { RiGithubLine } from "@remixicon/react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { LogoDark, LogoLight } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/login")({
@@ -12,7 +13,7 @@ function RouteComponent() {
   const { data: session, isPending } = authClient.useSession();
 
   if (isPending) {
-    return null;
+    return <Skeleton className="h-full w-full" />;
   }
 
   if (session) {
