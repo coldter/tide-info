@@ -1,10 +1,17 @@
 import { addDays, format } from "date-fns";
 import {
+  OPEN_WEATHER_REVERSE_SEARCH_URL,
   OPEN_WEATHER_SEARCH_URL,
   STORMGLASS_TIDE_EXTREMES_POINT_URL,
 } from "@/pkg/forecast/const";
-import type { SearchLocationResponse } from "@/pkg/forecast/types";
-import type { KeyPoolClient } from "@/pkg/key-pooler/client";
+import type {
+  SearchLocationResponse,
+  TideExtremesPointResponse,
+} from "@/pkg/forecast/types";
+import {
+  type KeyPoolClient,
+  RequestRateLimitError,
+} from "@/pkg/key-pooler/client";
 
 export class ForecastClient {
   private readonly _stormglassClient: KeyPoolClient;
@@ -25,6 +32,11 @@ export class ForecastClient {
     const url = `${OPEN_WEATHER_SEARCH_URL}?q=${query}&limit=5`;
     return await this._openWeatherMapClient.request(async (key) => {
       const response = await fetch(`${url}&appid=${key}`);
+      if (!response.ok) {
+        throw new RequestRateLimitError(
+          `Request failed with status: ${response.statusText}`
+        );
+      }
 
       const data = await response.json();
 
@@ -42,6 +54,34 @@ export class ForecastClient {
     });
   }
 
+  async reverseSearchLocation({ lat, lng }: { lat: number; lng: number }) {
+    const url = `${OPEN_WEATHER_REVERSE_SEARCH_URL}?lat=${lat}&lon=${lng}&limit=1`;
+    return await this._openWeatherMapClient.request(async (key) => {
+      const response = await fetch(`${url}&appid=${key}`);
+      if (!response.ok) {
+        throw new RequestRateLimitError(
+          `Request failed with status: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        const items = (data as SearchLocationResponse[]).map((item) => ({
+          name: item.name,
+          lat: item.lat,
+          lng: item.lon,
+          country: item.country,
+          state: item.state,
+        }));
+
+        return items[0] ?? null;
+      }
+
+      return null;
+    });
+  }
+
   async getTideExtremesPoints({ lat, lng }: { lat: number; lng: number }) {
     return await this._stormglassClient.request(async (key) => {
       const oneDayFromNow = addDays(new Date(), 1);
@@ -53,7 +93,12 @@ export class ForecastClient {
           },
         }
       );
-      const data = await response.json();
+      if (!response.ok) {
+        throw new RequestRateLimitError(
+          `Request failed with status: ${response.statusText}`
+        );
+      }
+      const data = (await response.json()) as TideExtremesPointResponse;
       return data;
     });
   }

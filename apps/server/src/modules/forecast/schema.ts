@@ -11,3 +11,11 @@ export const searchLocationResponseSchema = z
     state: z.string(),
   })
   .array();
+
+export const reverseSearchLocationResponseSchema = z.object({
+  name: z.string(),
+  lat: z.number(),
+  lng: z.number(),
+  country: z.string(),
+  state: z.string(),
+});

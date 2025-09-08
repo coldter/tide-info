@@ -4,6 +4,7 @@ import { createRouteConfig } from "@/lib/route-config";
 import { isAuthenticated } from "@/middlewares/guard";
 import {
   getTideInfoResponseSchema,
+  reverseSearchLocationResponseSchema,
   searchLocationResponseSchema,
 } from "@/modules/forecast/schema";
 
@@ -30,6 +31,32 @@ const forecastInfoRoutes = {
           },
         },
       },
+    },
+  }),
+  reverseSearchLocation: createRouteConfig({
+    operationId: "reverseSearchLocation",
+    method: "get",
+    path: "/location/reverse",
+    guard: [isAuthenticated],
+    tags: ["forecast"],
+    summary: "Reverse search for a location",
+    description: "Returns a location",
+    request: {
+      query: z.object({
+        lat: z.coerce.number(),
+        lng: z.coerce.number(),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Location",
+        content: {
+          "application/json": {
+            schema: reverseSearchLocationResponseSchema,
+          },
+        },
+      },
+      ...commonErrorResponses,
     },
   }),
   getTideInfo: createRouteConfig({

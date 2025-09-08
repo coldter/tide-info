@@ -13,6 +13,13 @@ export class NoAvailableKeyError extends Error {
   }
 }
 
+export class RequestRateLimitError extends Error {
+  constructor(message = "Request was rate limited") {
+    super(message);
+    this.name = "RequestRateLimitError";
+  }
+}
+
 export interface RetryOptions {
   maxAttempts: number;
   baseDelayMs: number;
@@ -88,7 +95,7 @@ function computeDelayMs(attempt: number, opts: RetryOptions): number {
  */
 export class KeyPoolClient extends KeyPool {
   private readonly defaultRetry: RetryOptions = {
-    maxAttempts: 30,
+    maxAttempts: 5,
     baseDelayMs: 25,
     maxDelayMs: 2000,
     jitterRatio: 0.15,

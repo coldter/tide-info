@@ -1,3 +1,5 @@
+import { RequestRateLimitError } from "@/pkg/key-pooler/client";
+
 // Helpers to detect HTTP-like responses and extract Retry-After
 export function isResponseLike(
   input: unknown
@@ -124,6 +126,9 @@ export function getRetryAfterMs(input: unknown): number | null {
 }
 
 export function defaultIsRateLimitError(error: unknown): boolean {
+  if (error instanceof RequestRateLimitError) {
+    return true;
+  }
   // HTTP 429 via response or error shape
   if (isResponseLike(error) && error.status === 429) {
     return true;
