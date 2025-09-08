@@ -19,7 +19,7 @@ const forecastInfoRoutes = {
     description: "Returns a list of locations",
     request: {
       query: z.object({
-        q: z.string(),
+        q: z.string().min(3),
       }),
     },
     responses: {
