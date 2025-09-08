@@ -36,7 +36,7 @@ const forecastInfoRoutes = {
   reverseSearchLocation: createRouteConfig({
     operationId: "reverseSearchLocation",
     method: "get",
-    path: "/location/reverse",
+    path: "/location/search/reverse",
     guard: [isAuthenticated],
     tags: ["forecast"],
     summary: "Reverse search for a location",

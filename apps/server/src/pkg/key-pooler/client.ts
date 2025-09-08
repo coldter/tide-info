@@ -95,7 +95,7 @@ function computeDelayMs(attempt: number, opts: RetryOptions): number {
  */
 export class KeyPoolClient extends KeyPool {
   private readonly defaultRetry: RetryOptions = {
-    maxAttempts: 5,
+    maxAttempts: process.env.NODE_ENV === "production" ? 5 : 30,
     baseDelayMs: 25,
     maxDelayMs: 2000,
     jitterRatio: 0.15,
