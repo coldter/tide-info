@@ -2,9 +2,11 @@ import { addDays, format } from "date-fns";
 import {
   OPEN_WEATHER_REVERSE_SEARCH_URL,
   OPEN_WEATHER_SEARCH_URL,
+  STORMGLASS_POINT_WEATHER_URL,
   STORMGLASS_TIDE_EXTREMES_POINT_URL,
 } from "@/pkg/forecast/const";
 import type {
+  PointWeatherResponse,
   SearchLocationResponse,
   TideExtremesPointResponse,
 } from "@/pkg/forecast/types";
@@ -99,7 +101,74 @@ export class ForecastClient {
         );
       }
       const data = (await response.json()) as TideExtremesPointResponse;
-      return data;
+      return {
+        extremesPoints: data.data,
+        station: data.meta.station,
+        meta: {
+          lat: data.meta.lat,
+          lng: data.meta.lng,
+          datum: data.meta.datum,
+          end: data.meta.end,
+          start: data.meta.start,
+        },
+      };
+    });
+  }
+
+  async getPointWeather({ lat, lng }: { lat: number; lng: number }) {
+    const currentTime = new Date().toISOString();
+    // const endTime = format(addDays(new Date(), 1), "yyyy-MM-dd");
+    const params = [
+      "airTemperature",
+      "pressure",
+      "cloudCover",
+      "currentDirection",
+      "currentSpeed",
+      "dewPointTemperature",
+      "gust",
+      "humidity",
+      "iceCover",
+      "precipitation",
+      "rain",
+      "snow",
+      "graupel",
+      "snowAlbedo",
+      "snowDepth",
+      "seaIceThickness",
+      "seaLevel",
+      "swellDirection",
+      "swellHeight",
+      "swellPeriod",
+      "secondarySwellPeriod",
+      "secondarySwellDirection",
+      "secondarySwellHeight",
+      "visibility",
+      "waterTemperature",
+      "waveDirection",
+      "waveHeight",
+      "wavePeriod",
+      "windWaveDirection",
+      "windWaveHeight",
+      "windWavePeriod",
+      "windDirection",
+      "windSpeed",
+    ];
+
+    return await this._stormglassClient.request(async (key) => {
+      const response = await fetch(
+        `${STORMGLASS_POINT_WEATHER_URL}?lat=${lat}&lng=${lng}&start=${currentTime}&end=${currentTime}&params=${params.join(",")}`,
+        {
+          headers: { Authorization: key },
+        }
+      );
+      if (!response.ok) {
+        throw new RequestRateLimitError(
+          `Request failed with status: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      return data as PointWeatherResponse;
     });
   }
 }

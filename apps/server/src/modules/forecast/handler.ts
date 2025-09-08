@@ -24,18 +24,40 @@ const cacheStorageReverseSearchLocation = createCachedStorage<
   z.infer<typeof reverseSearchLocationResponseSchema>
 >("reverse-search-location", seconds("1 day"));
 
+const cacheStorageGetTideExtremesPoints = createCachedStorage<
+  Awaited<ReturnType<typeof forecastClient.getTideExtremesPoints>>
+>("get-tide-extremes-points", seconds("1 day"));
+
 /**
  * Handler
  */
 const forecastInfoHandler = app
   .openapi(forecastInfoRoutes.getTideInfo, async (c) => {
     const { lat, lng } = c.req.valid("query");
-    const extremesPoints = await forecastClient.getTideExtremesPoints({
-      lat,
-      lng,
+    let extremesPoints: Awaited<
+      ReturnType<typeof forecastClient.getTideExtremesPoints>
+    > | null;
+
+    extremesPoints = await cacheStorageGetTideExtremesPoints.getItem(
+      `${lat}-${lng}`
+    );
+    if (!extremesPoints) {
+      extremesPoints = await forecastClient.getTideExtremesPoints({
+        lat,
+        lng,
+      });
+      await cacheStorageGetTideExtremesPoints.setItem(
+        `${lat}-${lng}`,
+        extremesPoints
+      );
+    }
+
+    const stationWeather = await forecastClient.getPointWeather({
+      lat: extremesPoints.station.lat,
+      lng: extremesPoints.station.lng,
     });
 
-    return c.json({ extremesPoints }, 200);
+    return c.json({ extremesPoints, stationWeather }, 200);
   })
 
   .openapi(forecastInfoRoutes.searchLocation, async (c) => {
