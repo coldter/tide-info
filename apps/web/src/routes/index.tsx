@@ -1,15 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { 
-  Waves, 
-  MapPin, 
-  Clock, 
-  Bell, 
-  Star, 
-  Cloud,
+import {
   ArrowRight,
-  Smartphone,
+  Bell,
+  Clock,
+  Cloud,
   Globe,
-  Shield
+  MapPin,
+  Shield,
+  Smartphone,
+  Star,
+  Waves,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,37 +23,43 @@ function RouteComponent() {
     {
       icon: Waves,
       title: "Real-time Tide Predictions",
-      description: "Get accurate high and low tide times for your nearest coast",
+      description:
+        "Get accurate high and low tide times for your nearest coast",
       color: "text-blue-600 dark:text-blue-400",
     },
     {
       icon: MapPin,
       title: "Location-Based",
-      description: "Automatically finds the nearest coastal tide station to your location",
+      description:
+        "Automatically finds the nearest coastal tide station to your location",
       color: "text-green-600 dark:text-green-400",
     },
     {
       icon: Clock,
       title: "Countdown Timer",
-      description: "Live countdown to the next tide event with visual indicators",
+      description:
+        "Live countdown to the next tide event with visual indicators",
       color: "text-orange-600 dark:text-orange-400",
     },
     {
       icon: Bell,
       title: "Smart Alerts",
-      description: "Get notified before high or low tides with customizable timing",
+      description:
+        "Get notified before high or low tides with customizable timing",
       color: "text-purple-600 dark:text-purple-400",
     },
     {
       icon: Star,
       title: "Favorite Locations",
-      description: "Save and quickly switch between your favorite coastal spots",
+      description:
+        "Save and quickly switch between your favorite coastal spots",
       color: "text-yellow-600 dark:text-yellow-400",
     },
     {
       icon: Cloud,
       title: "Weather Integration",
-      description: "View current weather conditions including wind, waves, and temperature",
+      description:
+        "View current weather conditions including wind, waves, and temperature",
       color: "text-cyan-600 dark:text-cyan-400",
     },
   ];
@@ -79,7 +85,7 @@ function RouteComponent() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white px-4 py-20 dark:from-blue-950/20 dark:to-background sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white px-4 py-20 sm:px-6 lg:px-8 dark:from-blue-950/20 dark:to-background">
         <div className="mx-auto max-w-7xl">
           <div className="text-center">
             <div className="mb-6 flex justify-center">
@@ -89,12 +95,12 @@ function RouteComponent() {
               Tide Information
             </h1>
             <p className="mx-auto mb-8 max-w-2xl text-muted-foreground text-xl">
-              Get real-time tide predictions, weather conditions, and smart alerts for your nearest coast.
-              Never miss a tide again.
+              Get real-time tide predictions, weather conditions, and smart
+              alerts for your nearest coast. Never miss a tide again.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Link to="/dashboard">
-                <Button size="lg" className="gap-2">
+                <Button className="gap-2" size="lg">
                   Get Started
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -107,14 +113,15 @@ function RouteComponent() {
             </div>
           </div>
         </div>
-        
+
         {/* Decorative wave SVG */}
-        <div className="absolute bottom-0 left-0 right-0">
+        <div className="absolute right-0 bottom-0 left-0">
           <svg
-            viewBox="0 0 1440 120"
             className="w-full text-blue-100 dark:text-blue-950/20"
             fill="currentColor"
+            viewBox="0 0 1440 120"
           >
+            <title>Decorative wave separator</title>
             <path d="M0,64 C240,96 480,32 720,48 C960,64 1200,96 1440,64 L1440,120 L0,120 Z" />
           </svg>
         </div>
@@ -127,23 +134,32 @@ function RouteComponent() {
             <h2 className="mb-4 font-bold text-3xl tracking-tight sm:text-4xl">
               Everything You Need for Tide Tracking
             </h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground text-lg">
-              Comprehensive tide information and tools designed for surfers, fishermen, 
-              beachgoers, and coastal enthusiasts.
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              Comprehensive tide information and tools designed for surfers,
+              fishermen, beachgoers, and coastal enthusiasts.
             </p>
           </div>
-          
+
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature, index) => {
+            {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <Card key={index} className="transition-all hover:shadow-lg">
+                <Card
+                  className="transition-all hover:shadow-lg"
+                  key={feature.title}
+                >
                   <CardContent className="p-6">
-                    <div className={`mb-4 inline-flex rounded-lg bg-background p-3 ${feature.color}`}>
+                    <div
+                      className={`mb-4 inline-flex rounded-lg bg-background p-3 ${feature.color}`}
+                    >
                       <Icon className="h-6 w-6" />
                     </div>
-                    <h3 className="mb-2 font-semibold text-lg">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <h3 className="mb-2 font-semibold text-lg">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {feature.description}
+                    </p>
                   </CardContent>
                 </Card>
               );
@@ -159,11 +175,11 @@ function RouteComponent() {
             <h2 className="mb-4 font-bold text-3xl tracking-tight sm:text-4xl">
               How It Works
             </h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground text-lg">
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
               Get started in seconds with our simple three-step process
             </p>
           </div>
-          
+
           <div className="grid gap-8 md:grid-cols-3">
             <div className="text-center">
               <div className="mb-4 flex justify-center">
@@ -171,12 +187,14 @@ function RouteComponent() {
                   1
                 </div>
               </div>
-              <h3 className="mb-2 font-semibold text-lg">Allow Location Access</h3>
+              <h3 className="mb-2 font-semibold text-lg">
+                Allow Location Access
+              </h3>
               <p className="text-muted-foreground">
                 Grant permission to detect your current location automatically
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="mb-4 flex justify-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 font-bold text-white text-xl">
@@ -188,7 +206,7 @@ function RouteComponent() {
                 We'll automatically locate the nearest tide station to you
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="mb-4 flex justify-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 font-bold text-white text-xl">
@@ -208,10 +226,10 @@ function RouteComponent() {
       <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-3">
-            {benefits.map((benefit, index) => {
+            {benefits.map((benefit) => {
               const Icon = benefit.icon;
               return (
-                <div key={index} className="flex gap-4">
+                <div className="flex gap-4" key={benefit.title}>
                   <div className="flex-shrink-0">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950/20">
                       <Icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -219,7 +237,9 @@ function RouteComponent() {
                   </div>
                   <div>
                     <h3 className="mb-1 font-semibold">{benefit.title}</h3>
-                    <p className="text-muted-foreground text-sm">{benefit.description}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {benefit.description}
+                    </p>
                   </div>
                 </div>
               );
@@ -238,7 +258,7 @@ function RouteComponent() {
             Join thousands of users who never miss a perfect tide
           </p>
           <Link to="/dashboard">
-            <Button size="lg" variant="secondary" className="gap-2">
+            <Button className="gap-2" size="lg" variant="secondary">
               Start Tracking Now
               <ArrowRight className="h-4 w-4" />
             </Button>

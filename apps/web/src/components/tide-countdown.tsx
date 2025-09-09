@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
 import { differenceInSeconds } from "date-fns";
 import { Timer } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface TideCountdownProps {
@@ -11,7 +11,11 @@ interface TideCountdownProps {
   height: number;
 }
 
-export function TideCountdown({ targetTime, tideType, height }: TideCountdownProps) {
+export function TideCountdown({
+  targetTime,
+  tideType,
+  height,
+}: TideCountdownProps) {
   const [timeLeft, setTimeLeft] = useState<{
     hours: number;
     minutes: number;
@@ -46,10 +50,12 @@ export function TideCountdown({ targetTime, tideType, height }: TideCountdownPro
   const isUrgent = timeLeft.total > 0 && timeLeft.total < 3600; // Less than 1 hour
 
   return (
-    <Card className={cn(
-      "overflow-hidden transition-all",
-      isUrgent && "ring-2 ring-orange-500 ring-offset-2"
-    )}>
+    <Card
+      className={cn(
+        "overflow-hidden transition-all",
+        isUrgent && "ring-2 ring-orange-500 ring-offset-2"
+      )}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -57,12 +63,12 @@ export function TideCountdown({ targetTime, tideType, height }: TideCountdownPro
             Next Tide Countdown
           </CardTitle>
           <Badge
-            variant={tideType === "high" ? "default" : "secondary"}
             className={cn(
-              tideType === "high" 
-                ? "bg-blue-500 hover:bg-blue-600" 
-                : "bg-orange-500 hover:bg-orange-600 text-white"
+              tideType === "high"
+                ? "bg-blue-500 hover:bg-blue-600"
+                : "bg-orange-500 text-white hover:bg-orange-600"
             )}
+            variant={tideType === "high" ? "default" : "secondary"}
           >
             {tideType === "high" ? "High" : "Low"} Tide
           </Badge>
@@ -73,49 +79,61 @@ export function TideCountdown({ targetTime, tideType, height }: TideCountdownPro
           <>
             <div className="grid grid-cols-3 gap-3">
               <div className="text-center">
-                <div className={cn(
-                  "rounded-lg p-3",
-                  tideType === "high" 
-                    ? "bg-blue-50 dark:bg-blue-950/20" 
-                    : "bg-orange-50 dark:bg-orange-950/20"
-                )}>
+                <div
+                  className={cn(
+                    "rounded-lg p-3",
+                    tideType === "high"
+                      ? "bg-blue-50 dark:bg-blue-950/20"
+                      : "bg-orange-50 dark:bg-orange-950/20"
+                  )}
+                >
                   <p className="font-bold text-3xl tabular-nums">
                     {String(timeLeft.hours).padStart(2, "0")}
                   </p>
-                  <p className="text-muted-foreground text-xs uppercase">Hours</p>
+                  <p className="text-muted-foreground text-xs uppercase">
+                    Hours
+                  </p>
                 </div>
               </div>
               <div className="text-center">
-                <div className={cn(
-                  "rounded-lg p-3",
-                  tideType === "high" 
-                    ? "bg-blue-50 dark:bg-blue-950/20" 
-                    : "bg-orange-50 dark:bg-orange-950/20"
-                )}>
+                <div
+                  className={cn(
+                    "rounded-lg p-3",
+                    tideType === "high"
+                      ? "bg-blue-50 dark:bg-blue-950/20"
+                      : "bg-orange-50 dark:bg-orange-950/20"
+                  )}
+                >
                   <p className="font-bold text-3xl tabular-nums">
                     {String(timeLeft.minutes).padStart(2, "0")}
                   </p>
-                  <p className="text-muted-foreground text-xs uppercase">Minutes</p>
+                  <p className="text-muted-foreground text-xs uppercase">
+                    Minutes
+                  </p>
                 </div>
               </div>
               <div className="text-center">
-                <div className={cn(
-                  "rounded-lg p-3",
-                  tideType === "high" 
-                    ? "bg-blue-50 dark:bg-blue-950/20" 
-                    : "bg-orange-50 dark:bg-orange-950/20"
-                )}>
+                <div
+                  className={cn(
+                    "rounded-lg p-3",
+                    tideType === "high"
+                      ? "bg-blue-50 dark:bg-blue-950/20"
+                      : "bg-orange-50 dark:bg-orange-950/20"
+                  )}
+                >
                   <p className="font-bold text-3xl tabular-nums">
                     {String(timeLeft.seconds).padStart(2, "0")}
                   </p>
-                  <p className="text-muted-foreground text-xs uppercase">Seconds</p>
+                  <p className="text-muted-foreground text-xs uppercase">
+                    Seconds
+                  </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-4 flex items-center justify-between rounded-lg border p-2">
               <span className="text-muted-foreground text-sm">Height</span>
-              <Badge variant="outline" className="font-mono">
+              <Badge className="font-mono" variant="outline">
                 {height.toFixed(2)}m
               </Badge>
             </div>

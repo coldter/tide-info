@@ -1,12 +1,14 @@
-import { useEffect } from "react";
 import L from "leaflet";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useEffect } from "react";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TideInfoResponse } from "@/lib/forecast-client";
 import "leaflet/dist/leaflet.css";
 
 // Fix for default markers in React Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+// Avoid delete operator and explicit any
+(L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl =
+  undefined;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -38,7 +40,11 @@ function MapController({
   return null;
 }
 
-export function CoastMap({ tideData, userLocation, locationName }: CoastMapProps) {
+export function CoastMap({
+  tideData,
+  userLocation,
+  locationName,
+}: CoastMapProps) {
   const { station } = tideData;
   const mapCenter: [number, number] = [station.lat, station.lng];
 
@@ -87,18 +93,18 @@ export function CoastMap({ tideData, userLocation, locationName }: CoastMapProps
         <div className="h-[400px] w-full">
           <MapContainer
             center={mapCenter}
-            zoom={10}
             className="h-full w-full"
             scrollWheelZoom={false}
+            zoom={10}
           >
             <MapController center={mapCenter} zoom={10} />
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            
+
             {/* Tide Station Marker */}
-            <Marker position={[station.lat, station.lng]} icon={stationIcon}>
+            <Marker icon={stationIcon} position={[station.lat, station.lng]}>
               <Popup>
                 <div className="space-y-1">
                   <p className="font-semibold">{station.name}</p>
@@ -117,12 +123,16 @@ export function CoastMap({ tideData, userLocation, locationName }: CoastMapProps
 
             {/* User Location Marker */}
             {userLocation && (
-              <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+              <Marker
+                icon={userIcon}
+                position={[userLocation.lat, userLocation.lng]}
+              >
                 <Popup>
                   <div className="space-y-1">
                     <p className="font-semibold">Your Location</p>
                     <p className="text-muted-foreground text-xs">
-                      {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+                      {userLocation.lat.toFixed(4)},{" "}
+                      {userLocation.lng.toFixed(4)}
                     </p>
                   </div>
                 </Popup>
@@ -130,16 +140,16 @@ export function CoastMap({ tideData, userLocation, locationName }: CoastMapProps
             )}
           </MapContainer>
         </div>
-        
+
         {/* Legend */}
         <div className="flex items-center gap-4 border-t p-3">
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+            <div className="h-3 w-3 rounded-full bg-blue-500" />
             <span className="text-sm">Tide Station</span>
           </div>
           {userLocation && (
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-green-500"></div>
+              <div className="h-3 w-3 rounded-full bg-green-500" />
               <span className="text-sm">Your Location</span>
             </div>
           )}

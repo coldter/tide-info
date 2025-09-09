@@ -1,17 +1,20 @@
-import { useState } from "react";
-import { MapPin, Star, Trash2, Plus, Search } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { MapPin, Plus, Search, Star, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
-  searchLocation,
   getTideInfo,
   type SearchLocation,
+  searchLocation,
 } from "@/lib/forecast-client";
-import { writeStoredLocation, type StoredLocation } from "@/lib/location-client";
+import {
+  type StoredLocation,
+  writeStoredLocation,
+} from "@/lib/location-client";
 
 const FAVORITES_KEY = "tide-info:favorites" as const;
 
@@ -42,7 +45,9 @@ interface FavoriteLocationsProps {
   onLocationSelect?: (location: StoredLocation) => void;
 }
 
-export function FavoriteLocations({ onLocationSelect }: FavoriteLocationsProps) {
+export function FavoriteLocations({
+  onLocationSelect,
+}: FavoriteLocationsProps) {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -79,17 +84,17 @@ export function FavoriteLocations({ onLocationSelect }: FavoriteLocationsProps) 
         ...location,
         addedAt: Date.now(),
       };
-      
+
       // Check if already exists
       if (favorites.some((f) => f.id === newFavorite.id)) {
         throw new Error("Location already in favorites");
       }
-      
+
       // Limit to 5 favorites
       if (favorites.length >= 5) {
         throw new Error("Maximum 5 favorite locations allowed");
       }
-      
+
       const updated = [...favorites, newFavorite];
       saveFavorites(updated);
       return updated;
@@ -122,8 +127,11 @@ export function FavoriteLocations({ onLocationSelect }: FavoriteLocationsProps) 
   const selectLocationMutation = useMutation({
     mutationFn: async (favorite: FavoriteLocation) => {
       // Get fresh tide data for this location
-      const tideInfo = await getTideInfo({ lat: favorite.lat, lng: favorite.lng });
-      
+      const tideInfo = await getTideInfo({
+        lat: favorite.lat,
+        lng: favorite.lng,
+      });
+
       const location: StoredLocation = {
         lat: favorite.lat,
         lng: favorite.lng,
@@ -132,7 +140,7 @@ export function FavoriteLocations({ onLocationSelect }: FavoriteLocationsProps) 
         state: favorite.state,
         updatedAt: Date.now(),
       };
-      
+
       writeStoredLocation(location);
       return { location, tideInfo };
     },
@@ -167,19 +175,19 @@ export function FavoriteLocations({ onLocationSelect }: FavoriteLocationsProps) 
         <div className="space-y-2">
           <div className="flex gap-2">
             <Input
-              placeholder="Search for a coastal location..."
-              value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && searchQuery.length >= 3) {
                   searchMutation.mutate(searchQuery);
                 }
               }}
+              placeholder="Search for a coastal location..."
+              value={searchQuery}
             />
             <Button
-              size="sm"
-              onClick={() => searchMutation.mutate(searchQuery)}
               disabled={searchQuery.length < 3 || searchMutation.isPending}
+              onClick={() => searchMutation.mutate(searchQuery)}
+              size="sm"
             >
               <Search className="h-4 w-4" />
             </Button>
@@ -187,37 +195,43 @@ export function FavoriteLocations({ onLocationSelect }: FavoriteLocationsProps) 
 
           {/* Search Results */}
           {isSearching && searchResults.length > 0 && (
-            <div className="rounded-lg border bg-muted/20 p-2 space-y-1">
-              <p className="text-muted-foreground text-xs mb-2">Search Results:</p>
-              {searchResults.slice(0, 5).map((result, idx) => (
+            <div className="space-y-1 rounded-lg border bg-muted/20 p-2">
+              <p className="mb-2 text-muted-foreground text-xs">
+                Search Results:
+              </p>
+              {searchResults.slice(0, 5).map((result) => (
                 <div
-                  key={idx}
                   className="flex items-center justify-between rounded-md bg-background p-2"
+                  key={`${result.lat}-${result.lng}`}
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium">{result.name}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-sm">
+                      {result.name}
+                    </p>
                     <p className="text-muted-foreground text-xs">
-                      {[result.state, result.country].filter(Boolean).join(", ")}
+                      {[result.state, result.country]
+                        .filter(Boolean)
+                        .join(", ")}
                     </p>
                   </div>
                   <Button
+                    disabled={addFavoriteMutation.isPending}
+                    onClick={() => addFavoriteMutation.mutate(result)}
                     size="sm"
                     variant="ghost"
-                    onClick={() => addFavoriteMutation.mutate(result)}
-                    disabled={addFavoriteMutation.isPending}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
               <Button
-                variant="ghost"
-                size="sm"
                 className="w-full"
                 onClick={() => {
                   setIsSearching(false);
                   setSearchResults([]);
                 }}
+                size="sm"
+                variant="ghost"
               >
                 Close
               </Button>
@@ -230,20 +244,22 @@ export function FavoriteLocations({ onLocationSelect }: FavoriteLocationsProps) 
           <div className="space-y-2">
             {favorites.map((favorite) => (
               <div
-                key={favorite.id}
                 className="group flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                key={favorite.id}
               >
                 <button
-                  type="button"
                   className="flex flex-1 items-start gap-3 text-left"
-                  onClick={() => selectLocationMutation.mutate(favorite)}
                   disabled={selectLocationMutation.isPending}
+                  onClick={() => selectLocationMutation.mutate(favorite)}
+                  type="button"
                 >
                   <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-sm">{favorite.name}</p>
                     <p className="text-muted-foreground text-xs">
-                      {[favorite.state, favorite.country].filter(Boolean).join(", ")}
+                      {[favorite.state, favorite.country]
+                        .filter(Boolean)
+                        .join(", ")}
                     </p>
                     <p className="text-muted-foreground text-xs">
                       {favorite.lat.toFixed(4)}, {favorite.lng.toFixed(4)}
@@ -251,10 +267,10 @@ export function FavoriteLocations({ onLocationSelect }: FavoriteLocationsProps) 
                   </div>
                 </button>
                 <Button
+                  className="opacity-0 group-hover:opacity-100"
+                  onClick={() => removeFavoriteMutation.mutate(favorite.id)}
                   size="sm"
                   variant="ghost"
-                  onClick={() => removeFavoriteMutation.mutate(favorite.id)}
-                  className="opacity-0 group-hover:opacity-100"
                 >
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </Button>

@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { Bell, BellOff, Clock, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
+import { AlertTriangle, Bell, BellOff, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import type { TideInfoResponse } from "@/lib/forecast-client";
 
 const ALERTS_KEY = "tide-info:alerts" as const;
@@ -52,7 +52,8 @@ interface TideAlertsProps {
 
 export function TideAlerts({ tideData }: TideAlertsProps) {
   const [settings, setSettings] = useState(getAlertSettings);
-  const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [permission, setPermission] =
+    useState<NotificationPermission>("default");
   const [nextAlert, setNextAlert] = useState<{
     time: Date;
     type: "high" | "low";
@@ -68,25 +69,37 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
 
   // Calculate next alert time
   useEffect(() => {
-    if (!tideData || !settings.enabled) {
+    if (!(tideData && settings.enabled)) {
       setNextAlert(null);
       return;
     }
 
     const now = new Date();
-    const upcomingTides = [];
+    const upcomingTides: Array<{
+      time: Date;
+      type: "high" | "low";
+      tideTime: Date;
+    }> = [];
 
     if (settings.highTide && tideData.nextTides.nextHighTide) {
       const tideTime = new Date(tideData.nextTides.nextHighTide.time);
-      const alertTime = new Date(tideTime.getTime() - settings.minutesBefore * 60000);
+      const alertTime = new Date(
+        tideTime.getTime() - settings.minutesBefore * 60_000
+      );
       if (alertTime > now) {
-        upcomingTides.push({ time: alertTime, type: "high" as const, tideTime });
+        upcomingTides.push({
+          time: alertTime,
+          type: "high" as const,
+          tideTime,
+        });
       }
     }
 
     if (settings.lowTide && tideData.nextTides.nextLowTide) {
       const tideTime = new Date(tideData.nextTides.nextLowTide.time);
-      const alertTime = new Date(tideTime.getTime() - settings.minutesBefore * 60000);
+      const alertTime = new Date(
+        tideTime.getTime() - settings.minutesBefore * 60_000
+      );
       if (alertTime > now) {
         upcomingTides.push({ time: alertTime, type: "low" as const, tideTime });
       }
@@ -98,7 +111,7 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
 
   // Set up alert timer
   useEffect(() => {
-    if (!nextAlert || !settings.enabled || permission !== "granted") {
+    if (!(nextAlert && settings.enabled) || permission !== "granted") {
       return;
     }
 
@@ -107,7 +120,7 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
       if (now >= nextAlert.time) {
         const tideType = nextAlert.type === "high" ? "High" : "Low";
         const tideTimeStr = format(nextAlert.tideTime, "h:mm a");
-        
+
         // Show notification
         new Notification(`${tideType} Tide Alert`, {
           body: `${tideType} tide coming at ${tideTimeStr} (in ${settings.minutesBefore} minutes)`,
@@ -117,19 +130,21 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
 
         // Play sound if enabled
         if (settings.soundEnabled) {
-          const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE");
+          const audio = new Audio(
+            "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE"
+          );
           audio.play().catch(() => {});
         }
 
         // Show toast
         toast.success(`${tideType} tide alert!`, {
           description: `${tideType} tide at ${tideTimeStr}`,
-          duration: 10000,
+          duration: 10_000,
         });
       }
     };
 
-    const interval = setInterval(checkAlert, 30000); // Check every 30 seconds
+    const interval = setInterval(checkAlert, 30_000); // Check every 30 seconds
     checkAlert(); // Check immediately
 
     return () => clearInterval(interval);
@@ -149,7 +164,7 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
       } else {
         toast.error("Notification permission denied");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to request notification permission");
     }
   };
@@ -176,7 +191,7 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
             Tide Alerts
           </CardTitle>
           {settings.enabled ? (
-            <Badge variant="default" className="bg-green-500">
+            <Badge className="bg-green-500" variant="default">
               Active
             </Badge>
           ) : (
@@ -189,17 +204,17 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
         {permission !== "granted" && (
           <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-950/20">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
+              <AlertTriangle className="mt-0.5 h-5 w-5 text-orange-600 dark:text-orange-400" />
               <div className="flex-1">
                 <p className="font-medium text-sm">Enable Notifications</p>
-                <p className="text-muted-foreground text-xs mt-1">
+                <p className="mt-1 text-muted-foreground text-xs">
                   Allow notifications to receive tide alerts
                 </p>
                 <Button
-                  size="sm"
-                  variant="outline"
                   className="mt-2"
                   onClick={requestPermission}
+                  size="sm"
+                  variant="outline"
                 >
                   Enable Notifications
                 </Button>
@@ -211,16 +226,16 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
         {/* Alert Settings */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label htmlFor="alerts-enabled" className="cursor-pointer">
+            <Label className="cursor-pointer" htmlFor="alerts-enabled">
               Enable Tide Alerts
             </Label>
             <Checkbox
-              id="alerts-enabled"
               checked={settings.enabled}
+              disabled={permission !== "granted"}
+              id="alerts-enabled"
               onCheckedChange={(checked) =>
                 updateSettings({ enabled: checked as boolean })
               }
-              disabled={permission !== "granted"}
             />
           </div>
 
@@ -230,24 +245,30 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
                 <p className="font-medium text-sm">Alert Types</p>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="high-tide" className="cursor-pointer text-sm">
+                    <Label
+                      className="cursor-pointer text-sm"
+                      htmlFor="high-tide"
+                    >
                       High Tide
                     </Label>
                     <Checkbox
-                      id="high-tide"
                       checked={settings.highTide}
+                      id="high-tide"
                       onCheckedChange={(checked) =>
                         updateSettings({ highTide: checked as boolean })
                       }
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="low-tide" className="cursor-pointer text-sm">
+                    <Label
+                      className="cursor-pointer text-sm"
+                      htmlFor="low-tide"
+                    >
                       Low Tide
                     </Label>
                     <Checkbox
-                      id="low-tide"
                       checked={settings.lowTide}
+                      id="low-tide"
                       onCheckedChange={(checked) =>
                         updateSettings({ lowTide: checked as boolean })
                       }
@@ -262,14 +283,14 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
                   {timeOptions.map((option) => (
                     <Button
                       key={option.value}
+                      onClick={() =>
+                        updateSettings({ minutesBefore: option.value })
+                      }
+                      size="sm"
                       variant={
                         settings.minutesBefore === option.value
                           ? "default"
                           : "outline"
-                      }
-                      size="sm"
-                      onClick={() =>
-                        updateSettings({ minutesBefore: option.value })
                       }
                     >
                       {option.label}
@@ -279,12 +300,12 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
               </div>
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="sound-enabled" className="cursor-pointer">
+                <Label className="cursor-pointer" htmlFor="sound-enabled">
                   Play Sound
                 </Label>
                 <Checkbox
-                  id="sound-enabled"
                   checked={settings.soundEnabled}
+                  id="sound-enabled"
                   onCheckedChange={(checked) =>
                     updateSettings({ soundEnabled: checked as boolean })
                   }
@@ -303,7 +324,7 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
               <span className="font-medium">
                 {format(nextAlert.time, "h:mm a")}
               </span>
-              <Badge variant="outline" className="text-xs">
+              <Badge className="text-xs" variant="outline">
                 {nextAlert.type === "high" ? "High" : "Low"} Tide
               </Badge>
             </div>
@@ -313,8 +334,6 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
         {/* Test Alert Button */}
         {settings.enabled && permission === "granted" && (
           <Button
-            variant="outline"
-            size="sm"
             className="w-full"
             onClick={() => {
               new Notification("Test Tide Alert", {
@@ -322,11 +341,15 @@ export function TideAlerts({ tideData }: TideAlertsProps) {
                 icon: "/favicon.ico",
               });
               if (settings.soundEnabled) {
-                const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE");
+                const audio = new Audio(
+                  "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE"
+                );
                 audio.play().catch(() => {});
               }
               toast.success("Test alert sent!");
             }}
+            size="sm"
+            variant="outline"
           >
             <BellOff className="mr-2 h-4 w-4" />
             Send Test Alert

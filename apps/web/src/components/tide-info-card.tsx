@@ -1,8 +1,8 @@
-import { differenceInMinutes, format, formatDistanceToNow } from "date-fns";
+import { differenceInMinutes, format } from "date-fns";
 import { ArrowDown, ArrowUp, Clock, MapPin, Waves } from "lucide-react";
-import type { TideInfoResponse } from "@/lib/forecast-client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { TideInfoResponse } from "@/lib/forecast-client";
 import { cn } from "@/lib/utils";
 
 interface TideInfoCardProps {
@@ -17,9 +17,13 @@ export function TideInfoCard({ tideData, locationName }: TideInfoCardProps) {
   const getTimeUntil = (timeString: string) => {
     const targetTime = new Date(timeString);
     const minutes = differenceInMinutes(targetTime, currentTime);
-    
-    if (minutes < 0) return "Past";
-    if (minutes < 60) return `${minutes}m`;
+
+    if (minutes < 0) {
+      return "Past";
+    }
+    if (minutes < 60) {
+      return `${minutes}m`;
+    }
     if (minutes < 1440) {
       const hours = Math.floor(minutes / 60);
       const mins = minutes % 60;
@@ -66,7 +70,7 @@ export function TideInfoCard({ tideData, locationName }: TideInfoCardProps) {
               <MapPin className="h-3 w-3" />
               <span>{locationName || station.name}</span>
               {station.distance > 0 && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge className="text-xs" variant="secondary">
                   {station.distance.toFixed(1)} km away
                 </Badge>
               )}
@@ -90,10 +94,14 @@ export function TideInfoCard({ tideData, locationName }: TideInfoCardProps) {
         </div>
 
         {/* Next Tide */}
-        <div className={cn(
-          "rounded-lg border-2 p-4",
-          isHighTide ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20" : "border-orange-500 bg-orange-50 dark:bg-orange-950/20"
-        )}>
+        <div
+          className={cn(
+            "rounded-lg border-2 p-4",
+            isHighTide
+              ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20"
+              : "border-orange-500 bg-orange-50 dark:bg-orange-950/20"
+          )}
+        >
           <div className="flex items-start justify-between">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -107,7 +115,7 @@ export function TideInfoCard({ tideData, locationName }: TideInfoCardProps) {
                 </span>
               </div>
               <div className="space-y-1">
-                <p className="text-2xl font-bold">
+                <p className="font-bold text-2xl">
                   {formatTideTime(nextTide.time)}
                 </p>
                 <p className="text-muted-foreground text-sm">
@@ -115,7 +123,7 @@ export function TideInfoCard({ tideData, locationName }: TideInfoCardProps) {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <Badge variant="outline" className="font-mono">
+                <Badge className="font-mono" variant="outline">
                   {nextTide.height.toFixed(2)}m
                 </Badge>
                 <Badge variant="secondary">
@@ -130,18 +138,18 @@ export function TideInfoCard({ tideData, locationName }: TideInfoCardProps) {
         <div className="grid gap-3 sm:grid-cols-2">
           {/* High Tide */}
           <div className="rounded-lg border bg-blue-50 p-3 dark:bg-blue-950/20">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               <ArrowUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-medium">High Tide</span>
+              <span className="font-medium text-sm">High Tide</span>
             </div>
-            <p className="text-xl font-semibold">
+            <p className="font-semibold text-xl">
               {formatTideTime(nextTides.nextHighTide.time)}
             </p>
             <p className="text-muted-foreground text-xs">
               {formatTideDate(nextTides.nextHighTide.time)}
             </p>
             <div className="mt-2 flex items-center gap-2">
-              <Badge variant="outline" className="text-xs font-mono">
+              <Badge className="font-mono text-xs" variant="outline">
                 {nextTides.nextHighTide.height.toFixed(2)}m
               </Badge>
               <span className="text-muted-foreground text-xs">
@@ -152,18 +160,18 @@ export function TideInfoCard({ tideData, locationName }: TideInfoCardProps) {
 
           {/* Low Tide */}
           <div className="rounded-lg border bg-orange-50 p-3 dark:bg-orange-950/20">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               <ArrowDown className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              <span className="text-sm font-medium">Low Tide</span>
+              <span className="font-medium text-sm">Low Tide</span>
             </div>
-            <p className="text-xl font-semibold">
+            <p className="font-semibold text-xl">
               {formatTideTime(nextTides.nextLowTide.time)}
             </p>
             <p className="text-muted-foreground text-xs">
               {formatTideDate(nextTides.nextLowTide.time)}
             </p>
             <div className="mt-2 flex items-center gap-2">
-              <Badge variant="outline" className="text-xs font-mono">
+              <Badge className="font-mono text-xs" variant="outline">
                 {nextTides.nextLowTide.height.toFixed(2)}m
               </Badge>
               <span className="text-muted-foreground text-xs">

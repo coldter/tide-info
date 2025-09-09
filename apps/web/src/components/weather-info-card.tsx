@@ -1,13 +1,6 @@
-import {
-  Cloud,
-  Droplets,
-  Eye,
-  Thermometer,
-  Wind,
-  Waves,
-} from "lucide-react";
-import type { TideInfoResponse } from "@/lib/forecast-client";
+import { Cloud, Droplets, Eye, Thermometer, Waves, Wind } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { TideInfoResponse } from "@/lib/forecast-client";
 
 interface WeatherInfoCardProps {
   tideData: TideInfoResponse;
@@ -15,10 +8,11 @@ interface WeatherInfoCardProps {
 
 export function WeatherInfoCard({ tideData }: WeatherInfoCardProps) {
   const weather = tideData.stationWeather.hours;
-  
+
   // Get average values from different sources
   const avgTemp = (weather.airTemperature.noaa + weather.airTemperature.sg) / 2;
-  const avgWaterTemp = (weather.waterTemperature.noaa + weather.waterTemperature.sg) / 2;
+  const avgWaterTemp =
+    (weather.waterTemperature.noaa + weather.waterTemperature.sg) / 2;
   const avgWindSpeed = (weather.windSpeed.noaa + weather.windSpeed.sg) / 2;
   const avgWaveHeight = (weather.waveHeight.noaa + weather.waveHeight.sg) / 2;
   const humidity = weather.humidity.sg;
@@ -87,12 +81,12 @@ export function WeatherInfoCard({ tideData }: WeatherInfoCardProps) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {weatherItems.map((item, index) => {
+          {weatherItems.map((item) => {
             const Icon = item.icon;
             return (
               <div
-                key={index}
                 className="flex flex-col items-center space-y-2 rounded-lg border p-3"
+                key={item.label}
               >
                 <Icon className={`h-5 w-5 ${item.color}`} />
                 <p className="text-center text-muted-foreground text-xs">

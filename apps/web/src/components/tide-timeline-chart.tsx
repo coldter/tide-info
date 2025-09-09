@@ -1,19 +1,19 @@
 import {
-  Chart as ChartJS,
   CategoryScale,
+  Chart as ChartJS,
+  type ChartOptions,
+  Filler,
+  Legend,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-  Filler,
-  type ChartOptions,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
 import { format } from "date-fns";
-import type { TideInfoResponse } from "@/lib/forecast-client";
+import { Line } from "react-chartjs-2";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { TideInfoResponse } from "@/lib/forecast-client";
 
 ChartJS.register(
   CategoryScale,
@@ -122,14 +122,17 @@ export function TideTimelineChart({ tideData }: TideTimelineChartProps) {
   };
 
   // Group points by date for display
-  const pointsByDate = sortedPoints.reduce((acc, point) => {
-    const date = format(new Date(point.time), "MMM d, yyyy");
-    if (!acc[date]) {
-      acc[date] = [];
-    }
-    acc[date].push(point);
-    return acc;
-  }, {} as Record<string, typeof sortedPoints>);
+  const pointsByDate = sortedPoints.reduce(
+    (acc, point) => {
+      const date = format(new Date(point.time), "MMM d, yyyy");
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(point);
+      return acc;
+    },
+    {} as Record<string, typeof sortedPoints>
+  );
 
   return (
     <Card>
@@ -143,41 +146,43 @@ export function TideTimelineChart({ tideData }: TideTimelineChartProps) {
         <div className="h-64 w-full">
           <Line data={data} options={options} />
         </div>
-        
+
         {/* Tide Schedule */}
         <div className="mt-6 space-y-3">
-          {Object.entries(pointsByDate).slice(0, 2).map(([date, points]) => (
-            <div key={date} className="rounded-lg border p-3">
-              <p className="font-medium text-sm mb-2">{date}</p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {points.map((point, idx) => {
-                  const isHigh = point.type === "high";
-                  return (
-                    <div
-                      key={idx}
-                      className={`flex items-center justify-between rounded-md p-2 ${
-                        isHigh
-                          ? "bg-blue-50 dark:bg-blue-950/20"
-                          : "bg-orange-50 dark:bg-orange-950/20"
-                      }`}
-                    >
-                      <span className="text-sm">
-                        {isHigh ? "↑ High" : "↓ Low"}
-                      </span>
-                      <div className="text-right">
-                        <p className="font-medium text-sm">
-                          {format(new Date(point.time), "h:mm a")}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          {point.height.toFixed(2)}m
-                        </p>
+          {Object.entries(pointsByDate)
+            .slice(0, 2)
+            .map(([date, points]) => (
+              <div className="rounded-lg border p-3" key={date}>
+                <p className="mb-2 font-medium text-sm">{date}</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {points.map((point) => {
+                    const isHigh = point.type === "high";
+                    return (
+                      <div
+                        className={`flex items-center justify-between rounded-md p-2 ${
+                          isHigh
+                            ? "bg-blue-50 dark:bg-blue-950/20"
+                            : "bg-orange-50 dark:bg-orange-950/20"
+                        }`}
+                        key={`${point.time}-${point.type}`}
+                      >
+                        <span className="text-sm">
+                          {isHigh ? "↑ High" : "↓ Low"}
+                        </span>
+                        <div className="text-right">
+                          <p className="font-medium text-sm">
+                            {format(new Date(point.time), "h:mm a")}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            {point.height.toFixed(2)}m
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </CardContent>
     </Card>

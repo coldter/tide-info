@@ -42,6 +42,9 @@
       },
       "nursery": {
         "useConsistentTypeDefinitions": "off"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "off"
       }
     }
   }
