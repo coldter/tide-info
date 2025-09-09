@@ -1,7 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { LogOut, Moon, Sun, User, Waves } from "lucide-react";
+import { LogOut, Moon, Sun, User } from "lucide-react";
 import { useTheme } from "next-themes";
+import { LogoSymbol } from "@/components/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,10 +35,13 @@ export function TopNavbar() {
       <div className="flex h-16 items-center px-6">
         <div className="flex items-center gap-3">
           <Link className="inline-flex items-center gap-2" to="/dashboard">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white">
-              <Waves className="h-6 w-6" />
-            </div>
-            <span className="font-semibold text-lg">Tide Info</span>
+            <LogoSymbol
+              className="dark:invert"
+              height={48}
+              title="Tide Info"
+              width={48}
+            />
+            <span className="font-semibold text-lg">Tidefy</span>
           </Link>
         </div>
 
