@@ -1,16 +1,11 @@
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
-import { AirQualityCard } from "@/components/air-quality-card";
-import { CarParkVacancy } from "@/components/car-park-vacancy";
-import { ConcentrationChart } from "@/components/concentration-chart";
 import { CountdownCard } from "@/components/countdown-card";
-import { MapSection } from "@/components/map-section";
 import { RequireAuth } from "@/components/require-auth";
-import { RoadSaturation } from "@/components/road-saturation";
-import { TemperatureChart } from "@/components/temperature-chart";
-import { TrafficSpeedGauge } from "@/components/traffic-speed-gauge";
+import { MapSection } from "@/components/map-section";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +16,12 @@ import {
   type StoredLocation,
   writeStoredLocation,
 } from "@/lib/location-client";
+import { TideSummaryCard } from "@/routes/dashboard/tide-summary-card";
+import { TideTimeline } from "@/routes/dashboard/tide-timeline";
+import { StationWeatherCard } from "@/routes/dashboard/station-weather-card";
+import { TideProgress } from "@/routes/dashboard/tide-progress";
+import { SearchLocation } from "@/routes/dashboard/search-location";
+import { CurrentTimeCard } from "@/routes/dashboard/current-time-card";
 
 export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
@@ -31,42 +32,7 @@ function RouteComponent() {
     <RequireAuth>
       <div className="space-y-4 p-4">
         <LocationGate />
-        <div className="grid gap-4 lg:grid-cols-3">
-          {/* Left column */}
-          <div className="space-y-4">
-            <AirQualityCard />
-            <ConcentrationChart color="orange" title="NO₂ Concentration" />
-            <ConcentrationChart color="blue" title="O₂ Concentration" />
-            <ConcentrationChart color="yellow" title="PM2.5 Concentration" />
-            <ConcentrationChart color="purple" title="PM10 Concentration" />
-          </div>
-
-          {/* Middle column */}
-          <div className="space-y-4">
-            {/* Countdown cards side by side */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <CountdownCard
-                className="h-full"
-                targetDate={new Date("2025-09-10T00:00:00Z")}
-                variant="compact"
-              />
-              <CountdownCard
-                className="h-full"
-                targetDate={new Date("2025-09-11T00:00:00Z")}
-                variant="compact"
-              />
-            </div>
-            <TemperatureChart />
-            <MapSection />
-          </div>
-
-          {/* Right column */}
-          <div className="space-y-4">
-            <TrafficSpeedGauge />
-            <RoadSaturation />
-            <CarParkVacancy />
-          </div>
-        </div>
+        <DashboardTideContent />
       </div>
     </RequireAuth>
   );
@@ -113,14 +79,11 @@ function formatLocationText(
 function LocationGate() {
   const queryClient = useQueryClient();
 
-  const stored = readStoredLocation();
-
   const locationQuery = useQuery({
-    queryKey: ["location", stored?.lat, stored?.lng],
+    queryKey: ["location"],
     queryFn: async () => {
-      if (stored) {
-        return stored;
-      }
+      const currentlyStored = readStoredLocation();
+      if (currentlyStored) return currentlyStored;
       const coords = await getBrowserLocation();
       const reverse = await reverseSearchLocation(coords);
       const enriched: StoredLocation = {
@@ -163,8 +126,8 @@ function LocationGate() {
       writeStoredLocation(enriched);
       return enriched;
     },
-    onSuccess: (loc) => {
-      queryClient.setQueryData(["location", loc.lat, loc.lng], loc);
+    onSuccess: (loc: StoredLocation) => {
+      queryClient.setQueryData(["location"], loc);
       queryClient.invalidateQueries({ queryKey: ["tide"] }).catch(() => {});
       toast.success("Location updated");
     },
@@ -198,32 +161,91 @@ function LocationGate() {
   }
 
   return (
-    <Card className="bg-card p-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-muted-foreground text-xs">Using location</p>
-          {locationContent}
-          {tideQuery.isPending && (
-            <p className="text-muted-foreground text-xs">Loading tide info…</p>
-          )}
-          {tideQuery.isError && (
-            <p className="text-red-600 text-xs dark:text-red-400">
-              Failed to load tide info
-            </p>
-          )}
+    <>
+      <Card className="bg-card p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-muted-foreground text-xs">Using location</p>
+            {locationContent}
+            {tideQuery.isPending && (
+              <p className="text-muted-foreground text-xs">Loading tide info…</p>
+            )}
+            {tideQuery.isError && (
+              <p className="text-red-600 text-xs dark:text-red-400">
+                Failed to load tide info
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              disabled={locationQuery.isPending || redetectMutation.isPending}
+              onClick={() => redetectMutation.mutate()}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              {redetectMutation.isPending ? "Detecting…" : "Use current location"}
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            disabled={locationQuery.isPending || redetectMutation.isPending}
-            onClick={() => redetectMutation.mutate()}
-            size="sm"
-            type="button"
-            variant="outline"
-          >
-            {redetectMutation.isPending ? "Detecting…" : "Use current location"}
-          </Button>
-        </div>
-      </div>
-    </Card>
+      </Card>
+
+      <DashboardTide data={tideQuery.data} isPending={tideQuery.isPending} />
+      <SearchLocation />
+    </>
   );
+}
+
+function DashboardTide({
+  data,
+  isPending,
+}: {
+  data: Awaited<ReturnType<typeof getTideInfo>> | undefined;
+  isPending: boolean;
+}) {
+  const stationTitle = data?.station?.name
+    ? `${data.station.name} • ${data.station.distance.toFixed(0)} m`
+    : undefined;
+  const stationSubtitle = data?.station
+    ? `${data.station.lat.toFixed(4)}, ${data.station.lng.toFixed(4)}`
+    : undefined;
+
+  const nextDates = useMemo(() => {
+    if (!data?.nextTides) return null;
+    return {
+      next: new Date(data.nextTides.nextTide.time),
+      high: new Date(data.nextTides.nextHighTide.time),
+      low: new Date(data.nextTides.nextLowTide.time),
+    };
+  }, [data]);
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-3">
+      <div className="space-y-4">
+        <TideSummaryCard data={data} isPending={isPending} />
+        <TideProgress data={data} isPending={isPending} />
+        <StationWeatherCard data={data} isPending={isPending} />
+      </div>
+
+      <div className="space-y-4">
+        {nextDates && (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <CountdownCard className="h-full" targetDate={nextDates.high} title="Next High Tide" variant="compact" />
+            <CountdownCard className="h-full" targetDate={nextDates.low} title="Next Low Tide" variant="compact" />
+          </div>
+        )}
+        <TideTimeline data={data} isPending={isPending} />
+        <MapSection lat={data?.station?.lat} lng={data?.station?.lng} title={stationTitle} subtitle={stationSubtitle} />
+      </div>
+
+      <div className="space-y-4">
+        <CurrentTimeCard />
+      </div>
+    </div>
+  );
+}
+
+function DashboardTideContent() {
+  // placeholder to keep layout consistent if needed later
+  return null;
 }

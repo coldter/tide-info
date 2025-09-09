@@ -76,7 +76,11 @@ export type TideInfoResponse = {
   };
 };
 
-const BASE_URL = import.meta.env.VITE_SERVER_URL as string;
+// Use a defensive cast to satisfy environments where vite/client types aren't loaded in the linter
+const BASE_URL = (
+  (import.meta as unknown as { env?: { VITE_SERVER_URL?: string } })?.env
+    ?.VITE_SERVER_URL || ""
+) as string;
 
 async function fetchJson<T>(input: string, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
