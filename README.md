@@ -1,5 +1,15 @@
 # tide-info
 
+# Dashboard Demo
+
+![Dashboard Screenshot](./public/images/dash1.png)
+
+![Dashboard Screenshot](./public/images/dash2.png)
+
+![Dashboard Screenshot](./public/images/dash3.png)
+
+
+
 ## Getting Started
 
 First, install the dependencies:
