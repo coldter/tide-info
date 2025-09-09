@@ -167,8 +167,18 @@ export class ForecastClient {
         );
       }
 
-      const data = await response.json();
-      return data as PointWeatherResponse;
+      const data = (await response.json()) as PointWeatherResponse;
+      const returnData = {
+        hours: data.hours[0] ?? null,
+        meta: {
+          end: data.meta.end,
+          start: data.meta.start,
+          lat: data.meta.lat,
+          lng: data.meta.lng,
+          params: data.meta.params,
+        },
+      };
+      return returnData;
     });
   }
 }

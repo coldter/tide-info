@@ -43,8 +43,8 @@ const forecastInfoRoutes = {
     description: "Returns a location",
     request: {
       query: z.object({
-        lat: z.coerce.number(),
-        lng: z.coerce.number(),
+        lat: z.coerce.number().openapi({ type: "number" }),
+        lng: z.coerce.number().openapi({ type: "number" }),
       }),
     },
     responses: {
@@ -69,8 +69,8 @@ const forecastInfoRoutes = {
     description: "Returns tide information",
     request: {
       query: z.object({
-        lat: z.coerce.number(),
-        lng: z.coerce.number(),
+        lat: z.coerce.number().openapi({ type: "number" }),
+        lng: z.coerce.number().openapi({ type: "number" }),
       }),
     },
     responses: {

@@ -8,6 +8,7 @@ import type {
   reverseSearchLocationResponseSchema,
   searchLocationResponseSchema,
 } from "@/modules/forecast/schema";
+import { getNextTides } from "@/modules/forecast/services";
 import { createCachedStorage } from "@/pkg/storage";
 import { defaultHook } from "@/utils/default-hook";
 
@@ -27,6 +28,10 @@ const cacheStorageReverseSearchLocation = createCachedStorage<
 const cacheStorageGetTideExtremesPoints = createCachedStorage<
   Awaited<ReturnType<typeof forecastClient.getTideExtremesPoints>>
 >("get-tide-extremes-points", seconds("1 day"));
+
+const cacheStorageGetPointWeather = createCachedStorage<
+  Awaited<ReturnType<typeof forecastClient.getPointWeather>>
+>("get-point-weather", seconds("1 day"));
 
 /**
  * Handler
@@ -52,12 +57,38 @@ const forecastInfoHandler = app
       );
     }
 
-    const stationWeather = await forecastClient.getPointWeather({
-      lat: extremesPoints.station.lat,
-      lng: extremesPoints.station.lng,
-    });
+    let stationWeather: Awaited<
+      ReturnType<typeof forecastClient.getPointWeather>
+    > | null;
 
-    return c.json({ extremesPoints, stationWeather }, 200);
+    stationWeather = await cacheStorageGetPointWeather.getItem(
+      `${extremesPoints.station.lat}-${extremesPoints.station.lng}`
+    );
+    if (!stationWeather) {
+      stationWeather = await forecastClient.getPointWeather({
+        lat: extremesPoints.station.lat,
+        lng: extremesPoints.station.lng,
+      });
+      if (!stationWeather?.hours) {
+        throw new HTTPException(404, {
+          message: "Station weather not found",
+        });
+      }
+      await cacheStorageGetPointWeather.setItem(
+        `${extremesPoints.station.lat}-${extremesPoints.station.lng}`,
+        stationWeather
+      );
+    }
+
+    return c.json(
+      {
+        extremesPoints: extremesPoints.extremesPoints,
+        stationWeather,
+        station: extremesPoints.station,
+        nextTides: getNextTides(extremesPoints.extremesPoints),
+      },
+      200
+    );
   })
 
   .openapi(forecastInfoRoutes.searchLocation, async (c) => {

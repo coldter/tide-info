@@ -37,7 +37,8 @@
       },
       "style": {
         "noMagicNumbers": "off",
-        "noExportedImports": "off"
+        "noExportedImports": "off",
+        "noNonNullAssertion": "off"
       },
       "nursery": {
         "useConsistentTypeDefinitions": "off"
