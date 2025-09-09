@@ -3,7 +3,6 @@ import type { APIKey, KeyPoolStorage, KeyStatus } from "@/pkg/key-pooler/types";
 
 export class KeyPoolStore implements KeyPoolStorage {
   private readonly storage: Storage<KeyStatus>;
-  private readonly keyPrefix = "key:";
 
   constructor(storage: Storage<KeyStatus>) {
     this.storage = storage;
@@ -22,7 +21,7 @@ export class KeyPoolStore implements KeyPoolStorage {
 
   async getAllKeyStatuses(): Promise<KeyStatus[]> {
     const allKeys = await this.storage.getKeys();
-    const ownKeys = allKeys.filter((k) => k.startsWith(this.keyPrefix));
+    const ownKeys = allKeys.map((k) => k.split(":")[1] || k);
     const records = await Promise.all(
       ownKeys.map((k) => this.storage.getItem(k))
     );
@@ -58,12 +57,12 @@ export class KeyPoolStore implements KeyPoolStorage {
 
   async reset(): Promise<void> {
     const allKeys = await this.storage.getKeys();
-    const ownKeys = allKeys.filter((k) => k.startsWith(this.keyPrefix));
+    const ownKeys = allKeys.map((k) => k.split(":")[1] || k);
     await Promise.all(ownKeys.map((k) => this.storage.removeItem(k)));
   }
 
   private buildStorageKey(key: APIKey): string {
-    return `${this.keyPrefix}${key}`;
+    return `${key}`;
   }
 
   private createDefaultStatus(key: APIKey): KeyStatus {
