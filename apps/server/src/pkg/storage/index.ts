@@ -1,5 +1,5 @@
 import { createStorage, type StorageValue } from "unstorage";
-import vercelRuntimeCacheDriver from "unstorage/drivers/vercel-runtime-cache";
+import vercelKVDriver from "unstorage/drivers/vercel-kv";
 import memoryDriver from "./driver/meta-memory";
 
 export function createCachedStorage<T extends StorageValue = StorageValue>(
@@ -8,7 +8,7 @@ export function createCachedStorage<T extends StorageValue = StorageValue>(
 ) {
   return createStorage<T>({
     driver: process.env.VERCEL
-      ? vercelRuntimeCacheDriver({
+      ? vercelKVDriver({
           base,
           ttl,
         })
