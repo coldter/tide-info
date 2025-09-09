@@ -1,16 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import type { ReactNode } from "react";
 import { toast } from "sonner";
-import { AirQualityCard } from "@/components/air-quality-card";
-import { CarParkVacancy } from "@/components/car-park-vacancy";
-import { ConcentrationChart } from "@/components/concentration-chart";
-import { CountdownCard } from "@/components/countdown-card";
-import { MapSection } from "@/components/map-section";
+import { MapPin, RefreshCw } from "lucide-react";
 import { RequireAuth } from "@/components/require-auth";
-import { RoadSaturation } from "@/components/road-saturation";
-import { TemperatureChart } from "@/components/temperature-chart";
-import { TrafficSpeedGauge } from "@/components/traffic-speed-gauge";
+import { TideInfoCard } from "@/components/tide-info-card";
+import { TideTimelineChart } from "@/components/tide-timeline-chart";
+import { CoastMap } from "@/components/coast-map";
+import { WeatherInfoCard } from "@/components/weather-info-card";
+import { TideCountdown } from "@/components/tide-countdown";
+import { FavoriteLocations } from "@/components/favorite-locations";
+import { TideAlerts } from "@/components/tide-alerts";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +17,7 @@ import { getTideInfo, reverseSearchLocation } from "@/lib/forecast-client";
 import {
   getBrowserLocation,
   readStoredLocation,
+  clearStoredLocation,
   type StoredLocation,
   writeStoredLocation,
 } from "@/lib/location-client";
@@ -29,92 +29,18 @@ export const Route = createFileRoute("/dashboard")({
 function RouteComponent() {
   return (
     <RequireAuth>
-      <div className="space-y-4 p-4">
-        <LocationGate />
-        <div className="grid gap-4 lg:grid-cols-3">
-          {/* Left column */}
-          <div className="space-y-4">
-            <AirQualityCard />
-            <ConcentrationChart color="orange" title="NO₂ Concentration" />
-            <ConcentrationChart color="blue" title="O₂ Concentration" />
-            <ConcentrationChart color="yellow" title="PM2.5 Concentration" />
-            <ConcentrationChart color="purple" title="PM10 Concentration" />
-          </div>
-
-          {/* Middle column */}
-          <div className="space-y-4">
-            {/* Countdown cards side by side */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <CountdownCard
-                className="h-full"
-                targetDate={new Date("2025-09-10T00:00:00Z")}
-                variant="compact"
-              />
-              <CountdownCard
-                className="h-full"
-                targetDate={new Date("2025-09-11T00:00:00Z")}
-                variant="compact"
-              />
-            </div>
-            <TemperatureChart />
-            <MapSection />
-          </div>
-
-          {/* Right column */}
-          <div className="space-y-4">
-            <TrafficSpeedGauge />
-            <RoadSaturation />
-            <CarParkVacancy />
-          </div>
-        </div>
+      <div className="container mx-auto space-y-6 p-4 md:p-6">
+        <DashboardContent />
       </div>
     </RequireAuth>
   );
 }
 
-type LocationTextState = {
-  text: string;
-  variant: "loading" | "error" | "normal";
-};
-
-function formatLocationText(
-  data: StoredLocation | undefined,
-  isPending: boolean,
-  isError: boolean,
-  error: unknown
-): LocationTextState {
-  if (isPending) {
-    return { text: "", variant: "loading" };
-  }
-  if (isError) {
-    const message =
-      error instanceof Error ? error.message : "Failed to get location";
-    return { text: message, variant: "error" };
-  }
-  if (data?.name) {
-    const parts = [data.name];
-    if (data.state) {
-      parts.push(data.state);
-    }
-    if (data.country) {
-      parts.push(data.country);
-    }
-    return { text: parts.join(", "), variant: "normal" };
-  }
-  if (data) {
-    return {
-      text: `${data.lat.toFixed(4)}, ${data.lng.toFixed(4)}`,
-      variant: "normal",
-    };
-  }
-  return { text: "", variant: "normal" };
-}
-
-function LocationGate() {
+function DashboardContent() {
   const queryClient = useQueryClient();
-
   const stored = readStoredLocation();
 
+  // Fetch location data
   const locationQuery = useQuery({
     queryKey: ["location", stored?.lat, stored?.lng],
     queryFn: async () => {
@@ -138,6 +64,7 @@ function LocationGate() {
     gcTime: 60 * 60 * 1000,
   });
 
+  // Fetch tide data
   const tideQuery = useQuery({
     queryKey: ["tide", locationQuery.data?.lat, locationQuery.data?.lng],
     enabled: Boolean(locationQuery.data?.lat && locationQuery.data?.lng),
@@ -146,8 +73,10 @@ function LocationGate() {
       return await getTideInfo({ lat, lng });
     },
     staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
 
+  // Re-detect location mutation
   const redetectMutation = useMutation({
     mutationFn: async () => {
       const coords = await getBrowserLocation();
@@ -175,55 +104,168 @@ function LocationGate() {
     },
   });
 
-  const locText = formatLocationText(
-    locationQuery.data,
-    locationQuery.isPending,
-    locationQuery.isError,
-    locationQuery.error
-  );
+  // Clear location mutation
+  const clearLocationMutation = useMutation({
+    mutationFn: async () => {
+      clearStoredLocation();
+      return null;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["location"] });
+      queryClient.invalidateQueries({ queryKey: ["tide"] });
+      toast.success("Location cleared");
+    },
+  });
 
-  let locationContent: ReactNode;
-  if (locationQuery.isPending) {
-    locationContent = <Skeleton className="mt-1 h-5 w-48" />;
-  } else if (locText.variant === "error") {
-    locationContent = (
-      <p className="truncate text-red-600 text-sm dark:text-red-400">
-        {locText.text}
-      </p>
-    );
-  } else {
-    locationContent = (
-      <p className="truncate text-foreground text-sm">{locText.text}</p>
-    );
-  }
+  const handleLocationSelect = (location: StoredLocation) => {
+    queryClient.setQueryData(["location", location.lat, location.lng], location);
+    queryClient.invalidateQueries({ queryKey: ["tide"] });
+  };
+
+  const locationName = locationQuery.data
+    ? [locationQuery.data.name, locationQuery.data.state, locationQuery.data.country]
+        .filter(Boolean)
+        .join(", ")
+    : "";
 
   return (
-    <Card className="bg-card p-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-muted-foreground text-xs">Using location</p>
-          {locationContent}
-          {tideQuery.isPending && (
-            <p className="text-muted-foreground text-xs">Loading tide info…</p>
-          )}
-          {tideQuery.isError && (
-            <p className="text-red-600 text-xs dark:text-red-400">
-              Failed to load tide info
+    <>
+      {/* Header Section */}
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="font-bold text-3xl tracking-tight">Tide Information</h1>
+            <p className="text-muted-foreground">
+              Real-time tide predictions and coastal weather
             </p>
-          )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Location Bar */}
+        <Card className="bg-card p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-muted-foreground" />
+              <div>
+                {locationQuery.isPending ? (
+                  <Skeleton className="h-5 w-48" />
+                ) : locationQuery.isError ? (
+                  <p className="text-red-600 text-sm dark:text-red-400">
+                    Failed to get location
+                  </p>
+                ) : (
+                  <>
+                    <p className="font-medium text-sm">{locationName}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {locationQuery.data?.lat.toFixed(4)},{" "}
+                      {locationQuery.data?.lng.toFixed(4)}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                disabled={locationQuery.isPending || redetectMutation.isPending}
+                onClick={() => redetectMutation.mutate()}
+                size="sm"
+                variant="outline"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {redetectMutation.isPending ? "Detecting..." : "Use Current Location"}
+              </Button>
+              {stored && (
+                <Button
+                  onClick={() => clearLocationMutation.mutate()}
+                  size="sm"
+                  variant="ghost"
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      {locationQuery.isError ? (
+        <Card className="p-8 text-center">
+          <p className="text-red-600 dark:text-red-400">
+            Failed to get location. Please enable location services and try again.
+          </p>
           <Button
-            disabled={locationQuery.isPending || redetectMutation.isPending}
-            onClick={() => redetectMutation.mutate()}
-            size="sm"
-            type="button"
+            onClick={() => locationQuery.refetch()}
+            className="mt-4"
             variant="outline"
           >
-            {redetectMutation.isPending ? "Detecting…" : "Use current location"}
+            Retry
           </Button>
+        </Card>
+      ) : tideQuery.isPending ? (
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <Skeleton className="h-96" />
+            <Skeleton className="h-64" />
+          </div>
+          <div className="space-y-6">
+            <Skeleton className="h-48" />
+            <Skeleton className="h-64" />
+          </div>
         </div>
-      </div>
-    </Card>
+      ) : tideQuery.isError ? (
+        <Card className="p-8 text-center">
+          <p className="text-red-600 dark:text-red-400">
+            Failed to load tide information. Please try again.
+          </p>
+          <Button
+            onClick={() => tideQuery.refetch()}
+            className="mt-4"
+            variant="outline"
+          >
+            Retry
+          </Button>
+        </Card>
+      ) : tideQuery.data ? (
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Main Column */}
+          <div className="space-y-6 lg:col-span-2">
+            {/* Tide Information Card */}
+            <TideInfoCard tideData={tideQuery.data} locationName={locationName} />
+
+            {/* Countdown Timer */}
+            <TideCountdown
+              targetTime={tideQuery.data.nextTides.nextTide.time}
+              tideType={
+                tideQuery.data.nextTides.nextTide.type === "high" ? "high" : "low"
+              }
+              height={tideQuery.data.nextTides.nextTide.height}
+            />
+
+            {/* Tide Timeline Chart */}
+            <TideTimelineChart tideData={tideQuery.data} />
+
+            {/* Weather Information */}
+            <WeatherInfoCard tideData={tideQuery.data} />
+
+            {/* Map */}
+            <CoastMap
+              tideData={tideQuery.data}
+              userLocation={locationQuery.data}
+              locationName={locationName}
+            />
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Tide Alerts */}
+            <TideAlerts tideData={tideQuery.data} />
+
+            {/* Favorite Locations */}
+            <FavoriteLocations onLocationSelect={handleLocationSelect} />
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

@@ -1,8 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { LogOut, Moon, Search, Sun, User } from "lucide-react";
+import { LogOut, Moon, Sun, User, Waves } from "lucide-react";
 import { useTheme } from "next-themes";
-import { LogoSymbol } from "@/components/logo/logo-symbol";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 
@@ -34,26 +32,17 @@ export function TopNavbar() {
   return (
     <nav className="border-b bg-card shadow-lg">
       <div className="flex h-16 items-center px-6">
-        <div className="flex-1">
+        <div className="flex items-center gap-3">
           <Link className="inline-flex items-center gap-2" to="/dashboard">
-            <LogoSymbol
-              className="dark:invert"
-              height={48}
-              title="Tide Info"
-              width={48}
-            />
-            <span className="sr-only">Tide Info</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white">
+              <Waves className="h-6 w-6" />
+            </div>
+            <span className="font-semibold text-lg">Tide Info</span>
           </Link>
         </div>
 
-        {/* Center - Search bar */}
-        <div className="relative max-w-md">
-          <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            className="w-80 rounded-lg border-border bg-background/60 pl-10 text-foreground transition-all duration-200 placeholder:text-muted-foreground focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
-            placeholder="Search monitoring data..."
-          />
-        </div>
+        {/* Spacer */}
+        <div className="flex-1" />
 
         {/* Right side - Theme toggle and User avatar */}
         <div className="flex flex-1 items-center justify-end gap-3">
