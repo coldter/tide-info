@@ -1,5 +1,7 @@
 # tide-info
 
+## Caution: VibeCoding Ahead
+
 # Dashboard Demo
 
 ![Dashboard Screenshot](./public/images/dash1.png)
