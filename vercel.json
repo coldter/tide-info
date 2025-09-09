@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "outputDirectory": "apps/web/dist",
+  "installCommand": "bun install",
+  "buildCommand": "bun run build",
+  "rewrites": [
+    { "source": "/edge/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
