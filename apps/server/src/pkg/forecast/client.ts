@@ -86,9 +86,9 @@ export class ForecastClient {
 
   async getTideExtremesPoints({ lat, lng }: { lat: number; lng: number }) {
     return await this._stormglassClient.request(async (key) => {
-      const oneDayFromNow = addDays(new Date(), 1);
+      const todayDate = addDays(new Date(), 0);
       const response = await fetch(
-        `${STORMGLASS_TIDE_EXTREMES_POINT_URL}?lat=${lat}&lng=${lng}&end=${format(oneDayFromNow, "yyyy-MM-dd")}`,
+        `${STORMGLASS_TIDE_EXTREMES_POINT_URL}?lat=${lat}&lng=${lng}&start=${format(todayDate, "yyyy-MM-dd")}`,
         {
           headers: {
             Authorization: key,
